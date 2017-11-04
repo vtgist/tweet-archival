@@ -1,11 +1,5 @@
-# App Engine Standard Flask Tutorial App
+Landing Page displays all tweets searched for
 
-This sample shows how to use [Flask](http://flask.pocoo.org/) to handle
-requests, forms, templates, and static files on Google App Engine Standard.
+Search option to search for new tweets
 
-Before running or deploying this application, install the dependencies using
-[pip](http://pip.readthedocs.io/en/stable/):
-
-    pip install -t lib -r requirements.txt
-
-For more information, see the [App Engine Standard README](../../README.md)
+To Do: periodic updation of search results
