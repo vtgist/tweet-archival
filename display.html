@@ -1,0 +1,71 @@
+
+{% autoescape true %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Tweet Archival</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="/static/bootstrap.css">
+  <link type="text/css" rel="stylesheet" href="/static/bootstrap-responsive.css">
+  <script src="/static/jquery.min.js"></script>
+  <script src="/static/bootstrap.min.js"></script>
+  <style type="text/css">
+  body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #f5f5f5;
+      }
+      input[type=text] {
+        width: 130px;
+        box-sizing: border-box;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+        background-color: white;
+        background-image: url('searchicon.png');
+        background-position: 10px 10px; 
+        background-repeat: no-repeat;
+        padding: 12px 20px 12px 40px;
+        -webkit-transition: width 0.4s ease-in-out;
+        transition: width 0.4s ease-in-out;
+      }
+
+input[type=text]:focus {
+    width: 20%;
+}
+    </style>
+</head>
+<body>
+      <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">          
+            <h1> <div class="brand"> Tweet Archive </div> </h1>
+          </div>
+        </div>
+      </div>
+    <br><br><br><br>
+    <div class="container">
+          <form method="post" action="/store">
+              <input type="text" name="keyword" placeholder="Search..">
+          </form>
+    </div>
+    
+
+{% for tweet in tweets %}
+<div class="container">
+    <a href="#{{tweet.hashtag}}" data-toggle="collapse"><span class=”icon”>#{{ tweet.hashtag }}</span></a>
+
+    <div id="{{tweet.hashtag}}" class="collapse">
+    {% for t in tweet.recentTweets %}
+    {% if t %}
+    {{ t }} <br>
+    {% endif %}
+    {% endfor %} 
+    </div>
+</div>
+{% endfor %}
+</body>
+</html>
+{% endautoescape %}
