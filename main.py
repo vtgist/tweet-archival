@@ -16,23 +16,17 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
+
 class TweetByHashtag(ndb.Model):
     hashtag = ndb.StringProperty()
     recentTweets = ndb.TextProperty(repeated=True)
-
-
-class Search(webapp2.RequestHandler):
-
-    def get(self):
-        template = JINJA_ENVIRONMENT.get_template('form.html')
-        self.response.write(template.render())
 
 
 class TweetDataStore(webapp2.RequestHandler):
 
     def post(self):
         keyword = self.request.get('keyword')
-        keyword = str('#')+keyword
+        keytag = str('#')+keyword
         tweetObject = TweetByHashtag.query(TweetByHashtag.hashtag==keyword).fetch(1)
         if len(tweetObject) == 0:
             consumer_key = 'XwMBmOrVPc6cFnro2yuu9XoHj'
@@ -41,7 +35,7 @@ class TweetDataStore(webapp2.RequestHandler):
             access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
             t = Twitter(
                 auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
-            twit = t.search.tweets(q=keyword, count =30)
+            twit = t.search.tweets(q=keytag, count =30)
             tweetArr = []
             for i in range(30):
                 try:
@@ -50,8 +44,20 @@ class TweetDataStore(webapp2.RequestHandler):
                     tweetArr.append('')
             tweetData = TweetByHashtag(hashtag = keyword,recentTweets = tweetArr)
             tweetData.put()
+            template_values = {
+                'key':keyword,
+                'tweets':tweetArr,
+            }
+            template = JINJA_ENVIRONMENT.get_template('tweet.html')
+            self.response.write(template.render(template_values))
+        else:
+            template_values = {
+                'tweets': tweetObject,
+            }
+            template = JINJA_ENVIRONMENT.get_template('existing_tweet.html')
+            self.response.write(template.render(template_values))
+            
 
-        self.redirect('/')
 
 class TweetDisplay(webapp2.RequestHandler):
 
@@ -60,9 +66,9 @@ class TweetDisplay(webapp2.RequestHandler):
         template_values = {
             'tweets': tweetObject,
         }
-        template = JINJA_ENVIRONMENT.get_template('submitted_form.html')
+        template = JINJA_ENVIRONMENT.get_template('display.html')
         self.response.write(template.render(template_values))
-
+#TODO
 class CronHourlyUpdate(webapp2.RequestHandler):
     def get(self):
         tweetObject = TweetByHashtag.query().fetch()
@@ -75,7 +81,7 @@ class CronHourlyUpdate(webapp2.RequestHandler):
         
 app = webapp2.WSGIApplication([
     ('/',TweetDisplay),
-    ('/search', Search),
     ('/store', TweetDataStore),
     ('/events/.*',CronHourlyUpdate)
 ], debug=True)
+
