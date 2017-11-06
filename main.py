@@ -21,7 +21,7 @@ class TweetByWord(ndb.Model):
     word = ndb.StringProperty()
     recentTweets = ndb.TextProperty(repeated=True)
     timestamp = ndb.TextProperty(repeated=True)
-    url = ndb.StringProperty(repeated=True)
+    stringurl = ndb.TextProperty(repeated=True)
 
 
 class TweetDataStore(webapp2.RequestHandler):
@@ -44,10 +44,10 @@ class TweetDataStore(webapp2.RequestHandler):
                 try:
                     tweetArr.append(twit['statuses'][i]['text'])
                     tweetTime.append(twit['statuses'][i]['created_at'])
-                    tweetURL.append(twit['statuses'][i]['id'])
+                    tweetURL.append(twit['statuses'][i]['id_str'])
                 except IndexError:
-                    break   
-            tweetData = TweetByWord(word = keyword,recentTweets = tweetArr,timestamp=tweetTime)
+                    break         
+            tweetData = TweetByWord(word = keyword,recentTweets = tweetArr,timestamp=tweetTime,stringurl=tweetURL)
             tweetData.put()
             template_values = {
                 'key':keyword,
@@ -87,15 +87,23 @@ class CronHourlyUpdate(webapp2.RequestHandler):
             access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
             t = Twitter(
                 auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
-            twit = t.search.tweets(q=keyword, count =30)
+            twit = t.search.tweets(q=data.word, count =30)
             tweetArr = []
+            tweetTime = []
+            tweetURL = [] 
             for i in range(30):
                 try:
                     tweetArr.append(twit['statuses'][i]['text'])
+                    tweetTime.append(twit['statuses'][i]['created_at'])
+                    tweetURL.append(twit['statuses'][i]['id_str'])
                 except IndexError:
-                    tweetArr.append('')
+                    break  
             temp = data.recentTweets
             data.recentTweets = temp + tweetArr
+            temp = data.timestamp
+            data.timestamp = temp + tweetTime
+            temp = data.stringurl
+            data.stringurl = temp + tweetURL
             data.put()
             self.response.status = 200 
             
@@ -115,3 +123,4 @@ app = webapp2.WSGIApplication([
     ('/events/.*',CronHourlyUpdate),
     ('/ext',ExternalSearch)
 ], debug=True)
+
