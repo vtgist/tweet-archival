@@ -1,0 +1,4 @@
+cron:
+- description: hourly updation
+  url: /events/update
+  schedule: every 1 hours
