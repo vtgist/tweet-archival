@@ -68,20 +68,34 @@ class TweetDisplay(webapp2.RequestHandler):
         }
         template = JINJA_ENVIRONMENT.get_template('display.html')
         self.response.write(template.render(template_values))
-#TODO
-class CronHourlyUpdate(webapp2.RequestHandler):
-    def get(self):
-        tweetObject = TweetByHashtag.query().fetch()
-        for tweet in tweetObject:
-            self.response.write(tweet.hashtag)
-            for t in tweet.recentTweets:
-                self.response.write(tweet.recentTweets)
-                self.response.write('\n')
 
+class CronHourlyUpdate(webapp2.RequestHandler):
+
+    def get(self):
+        tweetObject = TweetByHashtag.query()
+        for data in tweetObject.iter():
+            k = data.key
+            keytag = str('#')+ data.hashtag
+            consumer_key = 'XwMBmOrVPc6cFnro2yuu9XoHj'
+            consumer_secret = 'IkzDgTmQKP56bWrhAY1cVCKCcv2NFFawlAzTpLvUeQ3iQsd0zx'
+            access_token = '59450295-LDdE44hKMcNKp4oZrzpZsuQGci8grQRdtMylLQ3JO'
+            access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
+            t = Twitter(
+                auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
+            twit = t.search.tweets(q=keytag, count =30)
+            tweetArr = []
+            for i in range(30):
+                try:
+                    tweetArr.append(twit['statuses'][i]['text'])
+                except IndexError:
+                    tweetArr.append('')
+            data.recentTweets = tweetArr
+            data.put()
+            self.response.status = 200 
+            
         
 app = webapp2.WSGIApplication([
     ('/',TweetDisplay),
     ('/store', TweetDataStore),
     ('/events/.*',CronHourlyUpdate)
 ], debug=True)
-
