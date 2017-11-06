@@ -27,13 +27,13 @@
         background-image: url('searchicon.png');
         background-position: 10px 10px; 
         background-repeat: no-repeat;
-        padding: 12px 20px 12px 40px;
+        padding: 12px 20px 10px 40px;
         -webkit-transition: width 0.4s ease-in-out;
         transition: width 0.4s ease-in-out;
       }
 
 input[type=text]:focus {
-    width: 20%;
+    width: 40%;
 }
     </style>
 </head>
@@ -49,23 +49,27 @@ input[type=text]:focus {
     <div class="container">
           <form method="post" action="/store">
               <input type="text" name="keyword" placeholder="Search..">
+              <button type="submit" class ="btn">Search</button>
+              <button type="submit" formaction="/ext" class="btn btn-primary">Search on Twitter</button><br>
           </form>
     </div>
     
 
-{% for tweet in tweets %}
-<div class="container">
-    <a href="#{{tweet.hashtag}}" data-toggle="collapse"><span class=”icon”>#{{ tweet.hashtag }}</span></a>
 
-    <div id="{{tweet.hashtag}}" class="collapse">
+<div class="container">
+  {% for tweet in tweets %}
+    <a href="#{{ tweet.key.id() }}" data-toggle="collapse"><span class=”icon”>{{ tweet.word }}</span></a><br>
+
+    <div id="{{ tweet.key.id() }}" class="collapse">
     {% for t in tweet.recentTweets %}
     {% if t %}
-    {{ t }} <br>
+    {{ tweet.timestamp[loop.index0]}}: <a href="https://twitter.com/statuses/{{tweet.url[loop.index0]}}"> {{ t }} </a> <br>
     {% endif %}
     {% endfor %} 
     </div>
+    {% endfor %}
 </div>
-{% endfor %}
+
 </body>
 </html>
 {% endautoescape %}
