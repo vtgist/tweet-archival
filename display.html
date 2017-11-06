@@ -63,7 +63,7 @@ input[type=text]:focus {
     <div id="{{ tweet.key.id() }}" class="collapse">
     {% for t in tweet.recentTweets %}
     {% if t %}
-    {{ tweet.timestamp[loop.index0]}}: <a href="https://twitter.com/statuses/{{tweet.url[loop.index0]}}"> {{ t }} </a> <br>
+    {{ tweet.timestamp[loop.index0]}}: <a href="https://twitter.com/statuses/{{tweet.stringurl[loop.index0]}}"> {{ t }} </a> <br>
     {% endif %}
     {% endfor %} 
     </div>
