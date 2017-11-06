@@ -17,17 +17,18 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 
 
-class TweetByHashtag(ndb.Model):
-    hashtag = ndb.StringProperty()
+class TweetByWord(ndb.Model):
+    word = ndb.StringProperty()
     recentTweets = ndb.TextProperty(repeated=True)
+    timestamp = ndb.TextProperty(repeated=True)
+    url = ndb.StringProperty(repeated=True)
 
 
 class TweetDataStore(webapp2.RequestHandler):
 
     def post(self):
         keyword = self.request.get('keyword')
-        keytag = str('#')+keyword
-        tweetObject = TweetByHashtag.query(TweetByHashtag.hashtag==keyword).fetch(1)
+        tweetObject = TweetByWord.query(TweetByWord.word==keyword).fetch(1)
         if len(tweetObject) == 0:
             consumer_key = 'XwMBmOrVPc6cFnro2yuu9XoHj'
             consumer_secret = 'IkzDgTmQKP56bWrhAY1cVCKCcv2NFFawlAzTpLvUeQ3iQsd0zx'
@@ -35,18 +36,24 @@ class TweetDataStore(webapp2.RequestHandler):
             access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
             t = Twitter(
                 auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
-            twit = t.search.tweets(q=keytag, count =30)
+            twit = t.search.tweets(q=keyword, count =30)
             tweetArr = []
+            tweetTime = []
+            tweetURL = [] 
             for i in range(30):
                 try:
                     tweetArr.append(twit['statuses'][i]['text'])
+                    tweetTime.append(twit['statuses'][i]['created_at'])
+                    tweetURL.append(twit['statuses'][i]['id'])
                 except IndexError:
-                    tweetArr.append('')
-            tweetData = TweetByHashtag(hashtag = keyword,recentTweets = tweetArr)
+                    break   
+            tweetData = TweetByWord(word = keyword,recentTweets = tweetArr,timestamp=tweetTime)
             tweetData.put()
             template_values = {
                 'key':keyword,
                 'tweets':tweetArr,
+                'timestamp':tweetTime,
+                'url':tweetURL,
             }
             template = JINJA_ENVIRONMENT.get_template('tweet.html')
             self.response.write(template.render(template_values))
@@ -62,7 +69,7 @@ class TweetDataStore(webapp2.RequestHandler):
 class TweetDisplay(webapp2.RequestHandler):
 
     def get(self):
-        tweetObject = TweetByHashtag.query().fetch()
+        tweetObject = TweetByWord.query().fetch()
         template_values = {
             'tweets': tweetObject,
         }
@@ -72,30 +79,39 @@ class TweetDisplay(webapp2.RequestHandler):
 class CronHourlyUpdate(webapp2.RequestHandler):
 
     def get(self):
-        tweetObject = TweetByHashtag.query()
+        tweetObject = TweetByWord.query()
         for data in tweetObject.iter():
-            k = data.key
-            keytag = str('#')+ data.hashtag
             consumer_key = 'XwMBmOrVPc6cFnro2yuu9XoHj'
             consumer_secret = 'IkzDgTmQKP56bWrhAY1cVCKCcv2NFFawlAzTpLvUeQ3iQsd0zx'
             access_token = '59450295-LDdE44hKMcNKp4oZrzpZsuQGci8grQRdtMylLQ3JO'
             access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
             t = Twitter(
                 auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
-            twit = t.search.tweets(q=keytag, count =30)
+            twit = t.search.tweets(q=keyword, count =30)
             tweetArr = []
             for i in range(30):
                 try:
                     tweetArr.append(twit['statuses'][i]['text'])
                 except IndexError:
                     tweetArr.append('')
-            data.recentTweets = tweetArr
+            temp = data.recentTweets
+            data.recentTweets = temp + tweetArr
             data.put()
             self.response.status = 200 
             
-        
+class ExternalSearch(webapp2.RequestHandler):
+    
+    def post(self):  
+        keyword = self.request.get('keyword')
+        self.redirect('https://twitter.com/search?q='+str(keyword))
+
+
+
+
+
 app = webapp2.WSGIApplication([
     ('/',TweetDisplay),
     ('/store', TweetDataStore),
-    ('/events/.*',CronHourlyUpdate)
+    ('/events/.*',CronHourlyUpdate),
+    ('/ext',ExternalSearch)
 ], debug=True)
