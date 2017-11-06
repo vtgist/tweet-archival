@@ -1,5 +1,7 @@
 Landing Page displays all tweets searched for
 
 Search option to search for new tweets
+ 
+Periodic updation of data 
 
-To Do: periodic updation of search results
+To Do: Possible scalability issues
