@@ -35,7 +35,7 @@ class TweetDataStore(webapp2.RequestHandler):
             access_token = '59450295-LDdE44hKMcNKp4oZrzpZsuQGci8grQRdtMylLQ3JO'
             access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
             t = Twitter(
-                auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
+                auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret),retry=True)
             twit = t.search.tweets(q=keyword, count =30)
             tweetArr = []
             tweetTime = []
@@ -86,7 +86,7 @@ class CronHourlyUpdate(webapp2.RequestHandler):
             access_token = '59450295-LDdE44hKMcNKp4oZrzpZsuQGci8grQRdtMylLQ3JO'
             access_token_secret = 'wrkJBEWVH8MBXYTdABR4Itj66Zmcclq7PFdH0RhB701Yo'
             t = Twitter(
-                auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret))
+                auth=OAuth(access_token, access_token_secret, consumer_key, consumer_secret),retry=True)
             twit = t.search.tweets(q=data.word, count =30)
             tweetArr = []
             tweetTime = []
